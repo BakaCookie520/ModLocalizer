@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  modlocalizer:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      # 挂载上传文件目录，确保文件持久化
+      - ./uploads:/app/uploads
+      # 挂载配置目录，确保配置持久化
+      - ./config:/app/config
+    restart: unless-stopped

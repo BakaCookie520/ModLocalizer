@@ -154,6 +154,95 @@ npm run build
 2. 启动后端：`npm run dev:backend`
 3. 后端会自动服务前端构建产物
 
+## Docker部署
+
+### 使用Docker Compose（推荐）
+
+```bash
+# 构建并启动服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 停止服务
+docker-compose down
+
+# 查看日志
+docker-compose logs -f
+```
+
+### 使用Docker直接运行
+
+```bash
+# 构建镜像
+docker build -t modlocalizer .
+
+# 运行容器
+docker run -d \
+  --name modlocalizer \
+  -p 3000:3000 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/config:/app/config \
+  modlocalizer
+```
+
+### 环境变量配置
+
+- `PORT`: 服务端口（默认：3000）
+- `NODE_ENV`: 运行环境（默认：production）
+
+### 数据持久化
+
+Docker容器会自动创建以下目录用于数据持久化：
+- `uploads/`: 上传的mod文件
+- `config/`: 应用配置
+
+## CI/CD (GitHub Actions)
+
+项目配置了自动化的CI/CD流水线，支持：
+
+### 自动触发条件
+- **推送代码到main分支** - 自动构建Docker镜像
+- **创建版本标签** (如 `v1.0.0`) - 自动发布到GitHub Releases
+- **手动触发** - 在GitHub Actions页面手动运行工作流
+
+### 工作流程
+1. **代码检查** - 检出代码
+2. **Docker构建** - 使用Buildx构建多架构镜像
+3. **镜像推送** - 推送到GitHub Container Registry
+4. **发布创建** (仅限标签推送) - 自动创建GitHub Release
+
+### 使用方法
+
+#### 手动触发构建
+1. 访问项目的 `Actions` 标签页
+2. 选择 `Docker Release` 工作流
+3. 点击 `Run workflow` 按钮
+
+#### 发布新版本
+```bash
+# 创建并推送版本标签
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+#### 使用发布的镜像
+```bash
+# 拉取最新发布的镜像
+docker pull ghcr.io/bakacookie520/mod-localizer:latest
+
+# 拉取特定版本
+docker pull ghcr.io/bakacookie520/mod-localizer:v1.1.0
+```
+
+### 配置要求
+
+确保在GitHub仓库中启用以下权限：
+- **Actions** 权限
+- **Packages** 权限（用于容器注册表）
+- **Contents** 写入权限（用于发布）
+
 ## 许可证
 
 MIT License
