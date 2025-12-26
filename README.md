@@ -204,14 +204,15 @@ Docker容器会自动创建以下目录用于数据持久化：
 
 ### 自动触发条件
 - **推送代码到main分支** - 自动构建Docker镜像
-- **创建版本标签** (如 `v1.0.0`) - 自动发布到GitHub Releases
+- **创建版本标签** (如 `v1.0.0`) - 自动发布Docker镜像到GitHub Releases
 - **手动触发** - 在GitHub Actions页面手动运行工作流
 
 ### 工作流程
 1. **代码检查** - 检出代码
 2. **Docker构建** - 使用Buildx构建多架构镜像
 3. **镜像推送** - 推送到GitHub Container Registry
-4. **发布创建** (仅限标签推送) - 自动创建GitHub Release
+4. **镜像打包** - 将Docker镜像保存为tar.gz文件
+5. **发布创建** (仅限标签推送) - 自动创建GitHub Release并附加镜像文件
 
 ### 使用方法
 
@@ -228,6 +229,17 @@ git push origin v1.1.0
 ```
 
 #### 使用发布的镜像
+
+##### 方式一：从Release下载镜像文件
+1. 访问GitHub Releases页面
+2. 下载 `modlocalizer-v1.1.0.tar.gz` 文件
+3. 导入镜像：
+```bash
+gunzip modlocalizer-v1.1.0.tar.gz
+docker load -i modlocalizer-v1.1.0.tar
+```
+
+##### 方式二：从GitHub Container Registry拉取
 ```bash
 # 拉取最新发布的镜像
 docker pull ghcr.io/bakacookie520/mod-localizer:latest

@@ -53,7 +53,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  create-release:
+  save-image:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
@@ -61,10 +61,14 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
-    - name: Create Release
+    - name: Download Docker image
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+        docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} -o modlocalizer-${{ github.ref_name }}.tar
+        gzip modlocalizer-${{ github.ref_name }}.tar
+
+    - name: Create Release with Image
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref_name }}
@@ -72,15 +76,26 @@ jobs:
         body: |
           # MCMOD汉化工具 ${{ github.ref_name }}
           
-          ## Docker镜像
+          ## Docker镜像下载
           
-          镜像已发布到GitHub Container Registry：
+          本版本包含完整的Docker镜像文件，可以直接导入使用。
           
+          ### 镜像文件
+          - `modlocalizer-${{ github.ref_name }}.tar.gz` - 完整的Docker镜像压缩包
+          
+          ### 使用方法
+          
+          #### 1. 导入镜像
           ```bash
-          # 拉取最新镜像
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          # 下载并解压镜像文件
+          gunzip modlocalizer-${{ github.ref_name }}.tar.gz
           
-          # 运行容器
+          # 导入镜像
+          docker load -i modlocalizer-${{ github.ref_name }}.tar
+          ```
+          
+          #### 2. 运行容器
+          ```bash
           docker run -d \
             --name modlocalizer \
             -p 3000:3000 \
@@ -89,9 +104,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           ```
           
+          #### 3. 或者从GitHub Container Registry拉取
+          ```bash
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          ```
+          
           ## 更新日志
           
           查看CHANGELOG.md了解详细变更内容。
+        files: |
+          modlocalizer-${{ github.ref_name }}.tar.gz
         draft: false
         prerelease: false
         generate_release_notes: true
