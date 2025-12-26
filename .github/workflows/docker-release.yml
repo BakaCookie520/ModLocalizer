@@ -37,11 +37,10 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
+          type=ref,event=tag
+          type=sha
+        flavor: |
+          latest=auto
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -64,6 +63,7 @@ jobs:
 
     - name: Download Docker image
       run: |
+        # 使用标签名称作为镜像标签
         docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
         docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} -o modlocalizer-${{ github.ref_name }}.tar
         gzip modlocalizer-${{ github.ref_name }}.tar
