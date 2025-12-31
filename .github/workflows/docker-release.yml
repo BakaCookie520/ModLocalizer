@@ -82,7 +82,7 @@ jobs:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
-          # MCMOD汉化工具 ${{ github.ref_name }}
+          # ModLocalizer ${{ github.ref_name }}
           
           ## Docker镜像下载
           
