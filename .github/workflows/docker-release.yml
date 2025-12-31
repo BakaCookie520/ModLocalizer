@@ -59,10 +59,15 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write  # 创建Release需要写权限
+      packages: read   # 拉取镜像需要读权限
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整历史用于生成changelog
 
     - name: Download Docker image
       run: |
