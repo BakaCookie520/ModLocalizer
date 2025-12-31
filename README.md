@@ -1,16 +1,30 @@
-# MCMOD汉化工具
+<div align="center">
 
-![Logo](logo.jpg)
+# ModLocalizer
 
-一个基于Vue 3和Node.js的Minecraft模组自动汉化工具，使用LLM（大语言模型）进行翻译。
+<img src="logo.jpg" width="200" alt="Logo">
 
-## 功能特性
+**一个基于Vue 3和Node.js的Minecraft模组自动汉化工具，使用LLM（大语言模型）进行翻译。**
 
-- 🚀 自动提取mod文件中的`en_us.json`语言文件
-- 🤖 使用LLM（支持OpenAI格式API）进行智能翻译
-- 📝 支持手动编辑翻译结果
-- 📦 支持下载打包好的mod文件或单独的lang文件
-- 🎨 现代化的Web界面，操作简单直观
+[![GitHub release](https://img.shields.io/github/v/release/BakaCookie520/ModLocalizer)](https://github.com/BakaCookie520/ModLocalizer/releases)
+[![Docker Image](https://img.shields.io/docker/pulls/bakacookie520/modlocalizer)](https://github.com/BakaCookie520/ModLocalizer/pkgs/container/modlocalizer)
+[![License](https://img.shields.io/github/license/BakaCookie520/ModLocalizer)](LICENSE)
+
+[快速开始](#安装步骤) • [功能特性](#功能特性) • [Docker部署](#docker部署) • [GitHub Actions](#cicd-github-actions)
+
+</div>
+
+## ✨ 功能特性
+
+| 特性 | 描述 |
+|------|------|
+| 🚀 **自动提取** | 自动从mod文件中提取`en_us.json`语言文件 |
+| 🤖 **智能翻译** | 使用LLM（支持OpenAI格式API）进行高质量翻译 |
+| 📝 **手动编辑** | 支持对翻译结果进行手动编辑和优化 |
+| 📦 **灵活下载** | 支持下载完整mod包或单独的lang文件 |
+| 🎨 **现代化界面** | 基于Vue 3的直观易用的Web界面 |
+| 🔧 **Docker支持** | 提供完整的Docker部署方案 |
+| ⚡ **CI/CD集成** | 自动构建和发布到GitHub Releases |
 
 ## 技术栈
 
@@ -25,7 +39,7 @@
 
 ```bash
 git clone https://github.com/BakaCookie520/ModLocalizer.git
-cd ModLocalizer-
+cd ModLocalizer
 ```
 
 ### 2. 安装依赖
@@ -98,44 +112,6 @@ npm run dev:frontend
      - **下载打包Mod**: 下载包含翻译文件的完整mod
      - **下载Lang文件**: 仅下载翻译后的lang文件
 
-## 项目结构
-
-```
-ModLocalizer-/
-├── frontend/              # Vue前端项目
-│   ├── src/
-│   │   ├── components/    # Vue组件
-│   │   ├── views/         # 页面视图
-│   │   ├── api/           # API调用
-│   │   └── App.vue
-│   └── package.json
-├── backend/               # Node.js后端项目
-│   ├── routes/            # 路由处理
-│   ├── services/          # 业务逻辑
-│   │   ├── modProcessor.js    # mod文件处理
-│   │   ├── llmService.js      # LLM调用服务
-│   │   └── configManager.js   # 配置管理
-│   ├── utils/             # 工具函数
-│   └── server.js          # 服务器入口
-└── package.json           # 根目录配置
-```
-
-## API端点
-
-- `GET /api/config` - 获取配置
-- `POST /api/config` - 保存配置
-- `POST /api/upload` - 上传mod文件
-- `GET /api/lang/:sessionId/:modName` - 获取lang文件内容
-- `POST /api/translate` - 执行翻译
-- `GET /api/download/mod/:sessionId` - 下载打包mod
-- `GET /api/download/lang/:sessionId/:modName` - 下载lang文件
-
-## 注意事项
-
-1. **文件大小限制**: 上传的mod文件最大为100MB
-2. **翻译时间**: 翻译时间取决于条目数量和API响应速度
-3. **API费用**: 使用LLM API会产生费用，请注意控制使用量
-4. **文件格式**: 仅支持标准的Minecraft mod jar文件，且必须包含`assets/{mod_name}/lang/en_us.json`结构
 
 ## 开发
 
@@ -202,10 +178,9 @@ Docker容器会自动创建以下目录用于数据持久化：
 
 项目配置了自动化的CI/CD流水线，支持：
 
-### 自动触发条件
-- **推送代码到main分支** - 自动构建Docker镜像
-- **创建版本标签** (如 `v1.0.0`) - 自动发布Docker镜像到GitHub Releases
-- **手动触发** - 在GitHub Actions页面手动运行工作流
+### 触发条件
+- **推送版本标签** (如 `v1.0.0`) - 自动构建Docker镜像并发布到GitHub Releases
+- **手动触发** - 在GitHub Actions页面手动运行工作流（用于测试或特殊构建）
 
 ### 工作流程
 1. **代码检查** - 检出代码
