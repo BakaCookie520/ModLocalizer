@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
-import { getConfig, saveConfig, validateConfig, getPasswordConfig, savePassword, verifyPassword, checkNeedSetup } from '../services/configManager.js';
+import { getConfig, saveConfig, validateConfig } from '../services/configManager.js';
 import { processModFile, createTranslatedLangFile, packageModFile, createLangFileZip, cleanupTempFiles } from '../services/modProcessor.js';
 import { translateJsonData } from '../services/llmService.js';
 
@@ -284,70 +284,7 @@ router.get('/download/:type/:sessionId/:modName?', async (req, res) => {
   }
 });
 
-// 管理员路由 - 密码管理
-const adminRouter = express.Router();
 
-// 检查是否需要首次设置
-adminRouter.get('/admin/check-setup', async (req, res) => {
-  try {
-    const result = await checkNeedSetup();
-    res.json(result);
-  } catch (error) {
-    console.error('检查设置状态失败:', error);
-    res.status(500).json({ error: error.message, needSetup: true });
-  }
-});
-
-// 验证访问密码
-adminRouter.post('/admin/verify-password', async (req, res) => {
-  try {
-    const { password } = req.body;
-    
-    if (!password) {
-      return res.status(400).json({ error: '密码不能为空' });
-    }
-    
-    const result = await verifyPassword(password);
-    
-    if (result.success) {
-      res.json({ success: true, isDefaultPassword: result.isDefaultPassword });
-    } else {
-      res.status(401).json({ success: false, error: '密码错误' });
-    }
-  } catch (error) {
-    console.error('验证密码失败:', error);
-    res.status(500).json({ error: error.message, success: false });
-  }
-});
-
-// 设置初始密码
-adminRouter.post('/admin/setup-password', async (req, res) => {
-  try {
-    const { password } = req.body;
-    
-    if (!password) {
-      return res.status(400).json({ error: '密码不能为空' });
-    }
-    
-    if (password.length < 4) {
-      return res.status(400).json({ error: '密码长度至少4位' });
-    }
-    
-    const result = await savePassword(password);
-    
-    if (result.success) {
-      res.json({ success: true, message: '密码设置成功' });
-    } else {
-      res.status(500).json({ error: '设置失败', success: false });
-    }
-  } catch (error) {
-    console.error('设置密码失败:', error);
-    res.status(500).json({ error: error.message, success: false });
-  }
-});
-
-// 使用管理员路由
-router.use('/', adminRouter);
 
 export default router;
 
