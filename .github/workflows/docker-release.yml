@@ -1,16 +1,18 @@
 name: Docker Release
 
 on:
+  # 仅在推送版本标签时触发构建和发布
   push:
-    branches: [ main ]
     tags: [ 'v*' ]
-  workflow_dispatch:  # 允许手动触发
+  # 允许手动触发发布流程（用于测试或特殊构建）
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: bakacookie520/modlocalizer
 
 jobs:
+  # 构建和推送Docker镜像到GitHub Container Registry
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -52,6 +54,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+  # 将镜像保存为文件并创建GitHub Release（仅在tag推送时执行）
   save-image:
     needs: build-and-push
     runs-on: ubuntu-latest
