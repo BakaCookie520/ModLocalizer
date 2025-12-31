@@ -5,7 +5,7 @@
         <div class="header-content">
           <div class="header-title" @click="goToTranslate">
             <el-icon class="title-icon"><Box /></el-icon>
-            <h1>MCMOD汉化工具</h1>
+            <h1>ModLocalizer</h1>
           </div>
           <el-menu
             :default-active="activeMenu"
