@@ -47,9 +47,11 @@ jobs:
           npm install
           cd backend && npm install
           cd ../frontend && npm install
+        shell: bash
 
       - name: Build frontend
         run: npm run build:frontend
+        shell: bash
 
       - name: Package with pkg
         run: |
@@ -67,6 +69,7 @@ jobs:
             tar -czf modlocalizer-${{ github.ref_name }}-${{ matrix.artifact_name }}.tar.gz modlocalizer-${{ github.ref_name }}-${{ matrix.artifact_name }}
             rm modlocalizer-${{ github.ref_name }}-${{ matrix.artifact_name }}
           fi
+        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
