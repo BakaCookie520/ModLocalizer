@@ -6,7 +6,11 @@
     "dev:backend": "cd backend && node server.js",
     "dev:frontend": "cd frontend && npm run dev",
     "build:frontend": "cd frontend && npm run build",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "package": "npm run build:frontend && cd backend && npm run package",
+    "package:win": "npm run build:frontend && cd backend && npx pkg . --target node18-win-x64 --output ../dist/modlocalizer-windows.exe",
+    "package:mac": "npm run build:frontend && cd backend && npx pkg . --target node18-macos-x64 --output ../dist/modlocalizer-macos",
+    "package:linux": "npm run build:frontend && cd backend && npx pkg . --target node18-linux-x64 --output ../dist/modlocalizer-linux"
   },
   "keywords": ["minecraft", "mod", "localization", "translation"],
   "author": "",
