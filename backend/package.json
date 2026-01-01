@@ -16,6 +16,18 @@
     "openai": "^4.20.0",
     "fs-extra": "^11.1.1"
   },
+  "devDependencies": {
+    "pkg": "^5.8.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "package": "npm run build:frontend && pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output-path ./dist"
+  },
+  "pkg": {
+    "scripts": "*.js",
+    "assets": ["../frontend/dist/**/*"]
+  },
   "keywords": ["minecraft", "mod", "localization"],
   "author": "",
   "license": "MIT"
