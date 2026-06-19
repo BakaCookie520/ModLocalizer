@@ -1,24 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentDir = typeof __dirname !== 'undefined'
+  ? __dirname
+  : process.cwd();
 
-// 检测是否在pkg打包环境中运行
-const isPkg = typeof process.pkg !== 'undefined';
-
-// 根据环境确定静态文件路径
-let staticPath;
-if (isPkg) {
-  // 在pkg打包环境中，使用解压后的assets路径
-  staticPath = path.join(process.cwd(), 'frontend/dist');
-} else {
-  // 开发环境使用相对路径
-  staticPath = path.join(__dirname, '../frontend/dist');
-}
+const staticPath = path.join(currentDir, '../frontend/dist');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,4 +33,3 @@ app.listen(PORT, () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
   console.log(`API端点: http://localhost:${PORT}/api`);
 });
-

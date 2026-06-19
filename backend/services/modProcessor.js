@@ -1,13 +1,7 @@
 import AdmZip from 'adm-zip';
 import fs from 'fs-extra';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const TEMP_DIR = path.join(__dirname, '../temp');
-const UPLOADS_DIR = path.join(__dirname, '../uploads');
+import { TEMP_DIR, UPLOADS_DIR } from './paths.js';
 
 /**
  * 处理上传的mod文件
@@ -218,4 +212,3 @@ export async function cleanupTempFiles(workDir) {
     console.error('清理临时文件失败:', error);
   }
 }
-

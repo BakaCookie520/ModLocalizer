@@ -1,22 +1,15 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
+import path from 'path';
 import { getConfig, saveConfig, validateConfig } from '../services/configManager.js';
 import { processModFile, createTranslatedLangFile, packageModFile, createLangFileZip, cleanupTempFiles } from '../services/modProcessor.js';
 import { translateJsonData } from '../services/llmService.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { TEMP_DIR, UPLOADS_DIR, ensureRuntimeDirsSync } from '../services/paths.js';
 
 const router = express.Router();
-const UPLOADS_DIR = path.join(__dirname, '../uploads');
-const TEMP_DIR = path.join(__dirname, '../temp');
 
-// 确保上传目录存在
-fs.ensureDirSync(UPLOADS_DIR);
-fs.ensureDirSync(TEMP_DIR);
+ensureRuntimeDirsSync();
 
 // 配置multer用于文件上传
 const storage = multer.diskStorage({

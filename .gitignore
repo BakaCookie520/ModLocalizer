@@ -4,8 +4,10 @@ backend/node_modules/
 frontend/node_modules/
 
 # Build outputs
+dist/
 frontend/dist/
 frontend/.vite/
+backend/pkg-server.cjs
 
 # Environment variables
 .env
@@ -14,6 +16,7 @@ backend/.env
 
 # Config files
 backend/config.json
+backend/data/
 
 # Uploaded files
 backend/uploads/
@@ -35,4 +38,3 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-

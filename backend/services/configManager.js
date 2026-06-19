@@ -1,11 +1,5 @@
 import fs from 'fs-extra';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const CONFIG_FILE = path.join(__dirname, '../config.json');
+import { CONFIG_FILE } from './paths.js';
 
 /**
  * 获取配置
@@ -70,4 +64,3 @@ export async function validateConfig() {
   }
   return { valid: true };
 }
-

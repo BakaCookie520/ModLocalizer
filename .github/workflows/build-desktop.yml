@@ -56,6 +56,7 @@ jobs:
       - name: Package with pkg
         run: |
           cd backend
+          npm run build:pkg-entry
           npx pkg . --target ${{ matrix.target }} --output ../modlocalizer${{ matrix.ext }}
         shell: bash
 
