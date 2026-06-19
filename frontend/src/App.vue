@@ -1,258 +1,447 @@
 <template>
-  <div id="app">
-    <el-container>
-      <el-header class="modern-header">
-        <div class="header-content">
-          <div class="header-title" @click="goToTranslate">
-            <el-icon class="title-icon"><Box /></el-icon>
-            <h1>ModLocalizer</h1>
-          </div>
-          <el-menu
-            :default-active="activeMenu"
-            mode="horizontal"
-            router
-            class="header-menu"
-            :collapse="false"
-          >
-            <el-menu-item index="/config">
-              <el-icon><Setting /></el-icon>
-              <span>配置</span>
-            </el-menu-item>
-            <el-menu-item index="/translate">
-              <el-icon><Document /></el-icon>
-              <span>翻译</span>
-            </el-menu-item>
-          </el-menu>
-        </div>
-      </el-header>
-      <el-main class="modern-main">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-      </el-main>
-    </el-container>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" type="button" @click="goToTranslate">
+        <img src="/logo.jpg" alt="ModLocalizer" class="brand-logo" />
+        <span>
+          <strong>ModLocalizer</strong>
+          <small>Minecraft Mod 汉化工作台</small>
+        </span>
+      </button>
+
+      <div class="page-heading">
+        <p class="eyebrow">Mod language pipeline</p>
+        <h1>{{ pageTitle }}</h1>
+      </div>
+
+      <div class="topbar-actions">
+        <button
+          class="theme-toggle"
+          type="button"
+          :class="{ dark: isDark }"
+          :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
+          :title="isDark ? '切换到浅色模式' : '切换到深色模式'"
+          @click="toggleTheme"
+        >
+          <span class="toggle-track">
+            <span class="toggle-thumb">
+              <el-icon>
+                <Moon v-if="isDark" />
+                <Sunny v-else />
+              </el-icon>
+            </span>
+          </span>
+          <span class="toggle-text">{{ isDark ? '深色' : '浅色' }}</span>
+        </button>
+
+        <RouterLink class="ghost-link" :to="actionLink.to">
+          <el-icon>
+            <component :is="actionLink.icon" />
+          </el-icon>
+          <span>{{ actionLink.label }}</span>
+        </RouterLink>
+      </div>
+    </header>
+
+    <main class="content">
+      <RouterView v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Box, Setting, Document } from '@element-plus/icons-vue';
+import { computed, onMounted, ref } from 'vue';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
+import { Document, Moon, Setting, Sunny } from '@element-plus/icons-vue';
 
 const route = useRoute();
 const router = useRouter();
-const activeMenu = computed(() => route.path);
+const theme = ref('light');
+const isDark = computed(() => theme.value === 'dark');
+const themeKey = 'modlocalizer-theme';
+
+const pageTitle = computed(() => {
+  if (route.path === '/config') return '模型配置';
+  return '翻译任务';
+});
+
+const actionLink = computed(() => {
+  if (route.path === '/config') {
+    return { to: '/translate', label: '翻译任务', icon: Document };
+  }
+  return { to: '/config', label: 'API 设置', icon: Setting };
+});
 
 const goToTranslate = () => {
   router.push('/translate');
 };
+
+const applyTheme = (value) => {
+  document.documentElement.dataset.theme = value;
+  document.documentElement.style.colorScheme = value;
+};
+
+const setTheme = (value) => {
+  theme.value = value;
+  localStorage.setItem(themeKey, value);
+  applyTheme(value);
+};
+
+const toggleTheme = () => {
+  const nextTheme = isDark.value ? 'light' : 'dark';
+
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      setTheme(nextTheme);
+    });
+    return;
+  }
+
+  setTheme(nextTheme);
+};
+
+applyTheme(theme.value);
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem(themeKey);
+  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+});
 </script>
 
 <style>
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-soft: #f9fafc;
+  --panel-strong: #ffffff;
+  --text: #20242c;
+  --muted: #687386;
+  --border: #dfe5ef;
+  --primary: #2563eb;
+  --primary-weak: #e8f0ff;
+  --accent: #0f766e;
+  --accent-weak: #e5f7f4;
+  --accent-border: rgba(15, 118, 110, 0.35);
+  --warning: #b45309;
+  --danger: #dc2626;
+  --shadow: 0 16px 44px rgba(32, 36, 44, 0.08);
+  --primary-shadow: 0 8px 28px rgba(37, 99, 235, 0.12);
+  --icon-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
+  --topbar: rgba(255, 255, 255, 0.9);
+  --hover-border: #b9c3d4;
+  --table-head: #f3f6fb;
+  --code-bg: #eef2f7;
+  --code-text: #334155;
+  --dropzone-bg: #f8fafc;
+  --dropzone-border: #b7c2d4;
+  --ease-theme: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0f172a;
+  --panel: #151f32;
+  --panel-soft: #1b2740;
+  --panel-strong: #101827;
+  --text: #e5e7eb;
+  --muted: #9aa7bb;
+  --border: #2d3a50;
+  --primary: #60a5fa;
+  --primary-weak: #132b4f;
+  --accent: #5eead4;
+  --accent-weak: #123b37;
+  --accent-border: rgba(94, 234, 212, 0.32);
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+  --primary-shadow: 0 10px 30px rgba(96, 165, 250, 0.18);
+  --icon-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --topbar: rgba(15, 23, 42, 0.88);
+  --hover-border: #52627a;
+  --table-head: #1b2740;
+  --code-bg: #0f172a;
+  --code-text: #dbeafe;
+  --dropzone-bg: #111c2f;
+  --dropzone-border: #40506a;
+  --el-bg-color: var(--panel);
+  --el-bg-color-overlay: var(--panel-strong);
+  --el-fill-color-blank: var(--panel);
+  --el-fill-color-light: var(--panel-soft);
+  --el-fill-color-lighter: var(--panel-soft);
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: var(--text);
+  --el-text-color-secondary: var(--muted);
+  --el-border-color: var(--border);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--border);
+  --el-table-header-bg-color: var(--table-head);
+  --el-table-row-hover-bg-color: var(--panel-soft);
+  --el-mask-color: rgba(15, 23, 42, 0.72);
+}
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  transition: var(--ease-theme);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 #app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   min-height: 100vh;
-  background: #ffffff;
 }
 
-/* 全局隐藏三个点的折叠菜单 */
-.el-sub-menu.el-sub-menu__hide-arrow,
-li.el-sub-menu.el-sub-menu__hide-arrow,
-li[role="menuitem"].el-sub-menu {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  left: -9999px !important;
+.app-shell {
+  min-height: 100vh;
+  transition: var(--ease-theme);
 }
 
-/* 全局移除菜单项的下边框 */
-.el-menu--horizontal .el-menu-item,
-.el-menu--horizontal .el-menu-item.is-active {
-  border-bottom: none !important;
-  border: none !important;
-}
-
-.el-menu--horizontal .el-menu-item::after,
-.el-menu--horizontal .el-menu-item.is-active::after {
-  display: none !important;
-  content: none !important;
-}
-
-.modern-header {
-  background: #ffffff;
-  backdrop-filter: blur(10px);
-  color: #303133;
-  padding: 0;
-  height: 70px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  display: flex;
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
-  height: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  gap: 24px;
+  min-height: 88px;
+  padding: 16px 32px;
+  background: var(--topbar);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  transition: var(--ease-theme);
 }
 
-.header-title {
-  display: flex;
+.brand {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
   cursor: pointer;
-  transition: all 0.3s ease;
+  text-align: left;
+  transition: var(--ease-theme), transform 0.2s ease;
 }
 
-.header-title:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+.brand:hover {
+  background: var(--panel-soft);
 }
 
-.title-icon {
-  font-size: 28px;
-  color: #409eff;
-  animation: float 3s ease-in-out infinite;
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+.brand strong,
+.brand small {
+  display: block;
 }
 
-.header-content h1 {
+.brand strong {
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.brand small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.page-heading {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.topbar h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.ghost-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: var(--text);
   font-weight: 600;
-  color: #303133;
+  transition: var(--ease-theme), transform 0.2s ease;
 }
 
-.header-menu {
-  background-color: transparent;
-  border-bottom: none;
-  width: auto !important;
-  min-width: auto !important;
-  flex: 0 0 auto !important;
+.ghost-link:hover {
+  border-color: var(--hover-border);
+  transform: translateY(-1px);
 }
 
-/* 隐藏菜单的折叠按钮和更多菜单（三个点） */
-.header-menu :deep(.el-sub-menu),
-.header-menu :deep(.el-sub-menu__hide-arrow),
-.header-menu :deep(li.el-sub-menu),
-.header-menu :deep(li[role="menuitem"].el-sub-menu),
-.header-menu :deep(li.el-sub-menu.el-sub-menu__hide-arrow),
-.header-menu :deep(.el-sub-menu__icon-more),
-.header-menu :deep(.el-sub-menu__title),
-.header-menu :deep(.el-menu--horizontal .el-submenu__icon-arrow),
-.header-menu :deep(.el-menu--horizontal .el-menu--collapse),
-.header-menu :deep(.el-menu--horizontal .el-menu--collapse .el-submenu__icon-arrow),
-.header-menu :deep(.el-menu--horizontal .el-menu--collapse .el-submenu__title),
-.header-menu :deep(.el-menu--horizontal .el-menu--collapse .el-submenu) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  left: -9999px !important;
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* 确保菜单项正常显示 */
-.header-menu :deep(.el-menu--horizontal .el-menu-item) {
-  display: inline-flex !important;
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  transition: var(--ease-theme), transform 0.2s ease;
 }
 
-.header-menu .el-menu-item {
-  color: #606266;
-  border: none !important;
-  border-bottom: none !important;
-  transition: all 0.3s ease;
-  margin: 0 5px;
-  border-radius: 8px 8px 0 0;
+.theme-toggle:hover {
+  border-color: var(--hover-border);
+  transform: translateY(-1px);
 }
 
-.header-menu :deep(.el-menu-item) {
-  border: none !important;
-  border-bottom: none !important;
+.toggle-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--primary-weak);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: var(--ease-theme);
 }
 
-.header-menu :deep(.el-menu-item::after),
-.header-menu :deep(.el-menu-item::before) {
-  display: none !important;
-  content: none !important;
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 12px;
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.35s ease, color 0.35s ease;
 }
 
-.header-menu .el-menu-item:hover {
-  color: #409eff;
-  background-color: rgba(64, 158, 255, 0.1);
-  transform: translateY(-2px);
-  border: none !important;
-  border-bottom: none !important;
+.theme-toggle.dark .toggle-thumb {
+  transform: translateX(20px);
 }
 
-.header-menu .el-menu-item.is-active {
-  color: #409eff;
-  border: none !important;
-  border-bottom: none !important;
-  background-color: rgba(64, 158, 255, 0.15);
-  font-weight: 500;
+.toggle-text {
+  min-width: 30px;
 }
 
-.header-menu :deep(.el-menu-item.is-active) {
-  border: none !important;
-  border-bottom: none !important;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.38s;
+  animation-timing-function: ease;
 }
 
-.header-menu :deep(.el-menu-item.is-active::after),
-.header-menu :deep(.el-menu-item.is-active::before) {
-  display: none !important;
-  content: none !important;
-}
-
-.modern-main {
-  padding: 30px 20px;
-  max-width: 1400px;
+.content {
+  width: min(1240px, calc(100vw - 48px));
   margin: 0 auto;
-  min-height: calc(100vh - 70px);
+  padding: 28px 24px 48px;
 }
 
-/* 页面切换动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.fade-enter-from {
+.page-enter-from,
+.page-leave-to {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
 }
 
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+.el-button {
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: 8px;
+  transition: var(--ease-theme);
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .brand {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ghost-link {
+    justify-content: center;
+  }
+
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .theme-toggle,
+  .ghost-link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .content {
+    width: 100%;
+    padding: 18px 14px 36px;
+  }
 }
 </style>
-

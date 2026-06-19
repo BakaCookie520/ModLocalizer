@@ -1,57 +1,58 @@
 <template>
   <div class="config-view">
-    <el-card class="modern-card" shadow="hover">
-      <template #header>
-        <div class="card-header">
-          <el-icon class="header-icon"><Setting /></el-icon>
-          <span>API配置</span>
+    <section class="config-panel">
+      <header class="config-header">
+        <span class="header-icon">
+          <el-icon><Setting /></el-icon>
+        </span>
+        <div>
+          <p class="eyebrow">OpenAI compatible endpoint</p>
+          <h2>模型配置</h2>
         </div>
-      </template>
+      </header>
+
+      <el-alert
+        v-if="configStatus.configured"
+        title="配置已保存，可以回到翻译任务上传 Mod。"
+        type="success"
+        :closable="false"
+        show-icon
+      />
 
       <el-form
+        ref="configFormRef"
         :model="configForm"
         :rules="rules"
-        ref="configFormRef"
-        label-width="140px"
-        label-position="left"
-        class="modern-form"
+        label-position="top"
+        class="config-form"
       >
         <el-form-item label="API Key" prop="apiKey">
           <el-input
             v-model="configForm.apiKey"
             type="password"
             show-password
-            placeholder="请输入API Key"
+            placeholder="请输入 API Key"
             clearable
             size="large"
-            class="modern-input"
           >
             <template #prefix>
               <el-icon><Key /></el-icon>
             </template>
           </el-input>
-          <div class="form-tip">
-            <el-icon><InfoFilled /></el-icon>
-            支持OpenAI格式的API，如OpenAI、Azure OpenAI等
-          </div>
+          <p class="field-tip">支持 OpenAI 兼容接口。密钥只保存在本地后端配置文件中。</p>
         </el-form-item>
 
         <el-form-item label="模型名称" prop="model">
           <el-input
             v-model="configForm.model"
-            placeholder="例如: gpt-3.5-turbo, gpt-4"
+            placeholder="例如：gpt-4o-mini"
             clearable
             size="large"
-            class="modern-input"
           >
             <template #prefix>
               <el-icon><Cpu /></el-icon>
             </template>
           </el-input>
-          <div class="form-tip">
-            <el-icon><InfoFilled /></el-icon>
-            默认: gpt-3.5-turbo
-          </div>
         </el-form-item>
 
         <el-form-item label="API Base URL" prop="apiBaseUrl">
@@ -60,56 +61,32 @@
             placeholder="https://api.openai.com/v1"
             clearable
             size="large"
-            class="modern-input"
           >
             <template #prefix>
               <el-icon><Link /></el-icon>
             </template>
           </el-input>
-          <div class="form-tip">
-            <el-icon><InfoFilled /></el-icon>
-            默认: https://api.openai.com/v1（使用OpenAI时无需修改）
-          </div>
         </el-form-item>
 
-        <el-form-item>
-          <el-button 
-            type="primary" 
-            @click="handleSave" 
-            :loading="saving"
-            size="large"
-            class="save-button"
-          >
+        <div class="form-actions">
+          <el-button type="primary" size="large" :loading="saving" @click="handleSave">
             <el-icon v-if="!saving"><Check /></el-icon>
-            <span>保存配置</span>
+            保存配置
           </el-button>
-          <el-button 
-            @click="handleReset"
-            size="large"
-          >
+          <el-button size="large" @click="handleReset">
             <el-icon><RefreshLeft /></el-icon>
-            <span>重置</span>
+            重置
           </el-button>
-
-        </el-form-item>
+        </div>
       </el-form>
-
-      <el-alert
-        v-if="configStatus.configured"
-        title="配置已保存"
-        type="success"
-        :closable="false"
-        class="success-alert"
-        show-icon
-      />
-    </el-card>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Setting, Key, Cpu, Link, InfoFilled, Check, RefreshLeft } from '@element-plus/icons-vue';
+import { Check, Cpu, Key, Link, RefreshLeft, Setting } from '@element-plus/icons-vue';
 import apiService from '../api';
 
 const configFormRef = ref(null);
@@ -118,175 +95,117 @@ const configStatus = ref({ configured: false });
 
 const configForm = reactive({
   apiKey: '',
-  model: 'gpt-3.5-turbo',
+  model: 'gpt-4o-mini',
   apiBaseUrl: 'https://api.openai.com/v1'
 });
 
 const rules = {
-  apiKey: [
-    { required: true, message: '请输入API Key', trigger: 'blur' }
-  ],
-  model: [
-    { required: true, message: '请输入模型名称', trigger: 'blur' }
-  ],
-  apiBaseUrl: [
-    { required: true, message: '请输入API Base URL', trigger: 'blur' }
-  ]
+  apiKey: [{ required: true, message: '请输入 API Key', trigger: 'blur' }],
+  model: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
+  apiBaseUrl: [{ required: true, message: '请输入 API Base URL', trigger: 'blur' }]
 };
 
-
-
-// 加载配置
 const loadConfig = async () => {
   try {
     const config = await apiService.getConfig();
-    if (config.configured) {
-      configForm.apiKey = config.apiKey || '';
-      configForm.model = config.model || 'gpt-3.5-turbo';
-      configForm.apiBaseUrl = config.apiBaseUrl || 'https://api.openai.com/v1';
-      configStatus.value.configured = true;
-    }
+    configForm.apiKey = config.apiKey || '';
+    configForm.model = config.model || 'gpt-4o-mini';
+    configForm.apiBaseUrl = config.apiBaseUrl || 'https://api.openai.com/v1';
+    configStatus.value.configured = Boolean(config.configured);
   } catch (error) {
-    console.error('加载配置失败:', error);
+    ElMessage.error(`读取配置失败：${error.message}`);
   }
 };
 
-// 保存配置
 const handleSave = async () => {
   if (!configFormRef.value) return;
-  
-  await configFormRef.value.validate(async (valid) => {
-    if (valid) {
-      saving.value = true;
-      try {
-        await apiService.saveConfig(configForm);
-        ElMessage.success('配置保存成功');
-        configStatus.value.configured = true;
-      } catch (error) {
-        ElMessage.error('保存失败: ' + error.message);
-      } finally {
-        saving.value = false;
-      }
-    }
-  });
+
+  const valid = await configFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  saving.value = true;
+  try {
+    await apiService.saveConfig(configForm);
+    configStatus.value.configured = true;
+    ElMessage.success('配置已保存');
+  } catch (error) {
+    ElMessage.error(`保存失败：${error.message}`);
+  } finally {
+    saving.value = false;
+  }
 };
 
-// 重置表单
-const handleReset = () => {
-  configFormRef.value?.resetFields();
-  loadConfig();
+const handleReset = async () => {
+  configFormRef.value?.clearValidate();
+  await loadConfig();
 };
 
-onMounted(() => {
-  loadConfig();
-});
+onMounted(loadConfig);
 </script>
 
 <style scoped>
 .config-view {
-  max-width: 700px;
-  margin: 0 auto;
-  animation: slideUp 0.5s ease-out;
+  max-width: 760px;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.config-panel {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
-.modern-card {
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
-  transition: all 0.3s ease;
-}
-
-.modern-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.card-header {
-  display: flex;
+.config-header {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #303133;
+  gap: 14px;
 }
 
 .header-icon {
-  font-size: 24px;
-  color: #409eff;
-}
-
-.modern-form {
-  padding: 10px 0;
-}
-
-.modern-input {
-  transition: all 0.3s ease;
-}
-
-.modern-input :deep(.el-input__wrapper) {
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.modern-input :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
-}
-
-.modern-input :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 4px 16px rgba(64, 158, 255, 0.3);
-}
-
-.form-tip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #909399;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
   border-radius: 8px;
+  background: var(--primary-weak);
+  color: var(--primary);
+  font-size: 26px;
 }
 
-.form-tip .el-icon {
-  font-size: 14px;
-  color: #409eff;
+.config-header h2 {
+  margin: 0;
+  font-size: 24px;
 }
 
-.save-button {
-  padding: 12px 30px;
-  font-size: 16px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-  transition: all 0.3s ease;
+.config-form {
+  display: grid;
+  gap: 4px;
 }
 
-.save-button:hover {
-  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
-  transform: translateY(-2px);
+.field-tip {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.success-alert {
-  margin-top: 20px;
-  border-radius: 10px;
-  border: none;
-  box-shadow: 0 2px 8px rgba(103, 194, 58, 0.2);
+.form-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 8px;
 }
 
+@media (max-width: 700px) {
+  .config-panel {
+    padding: 18px;
+  }
 
+  .form-actions {
+    flex-direction: column;
+  }
+}
 </style>
-

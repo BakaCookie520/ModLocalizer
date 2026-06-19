@@ -201,7 +201,7 @@ export async function translateJsonData(jsonData, onProgress = null) {
           onProgress({
             current: i,
             total: entriesToTranslate.length,
-            percentage: Math.round((i / entriesToTranslate.length) * 90) // 留10%给最后处理
+            percentage: Math.round((i / entriesToTranslate.length) * 100)
           });
         }
         
@@ -225,19 +225,19 @@ export async function translateJsonData(jsonData, onProgress = null) {
         const responseText = response.choices[0]?.message?.content?.trim() || '{}';
         const batchTranslated = parseTranslationResponse(responseText, batch);
         allTranslatedJson = { ...allTranslatedJson, ...batchTranslated };
+
+        if (onProgress) {
+          const completed = Math.min(i + batch.length, entriesToTranslate.length);
+          onProgress({
+            current: completed,
+            total: entriesToTranslate.length,
+            percentage: Math.round((completed / entriesToTranslate.length) * 100)
+          });
+        }
       }
     } else {
       // 一次性翻译所有内容
       const prompt = promptTemplate.replace('{CONTENT}', entriesList);
-      
-      // 报告翻译中
-      if (onProgress) {
-        onProgress({
-          current: entriesToTranslate.length / 2,
-          total: entriesToTranslate.length,
-          percentage: 50
-        });
-      }
       
       // 调用AI进行翻译
       const response = await openaiClient.chat.completions.create({
@@ -331,4 +331,3 @@ function parseTranslationResponse(responseText, entriesToTranslate) {
   
   return translatedJson;
 }
-
